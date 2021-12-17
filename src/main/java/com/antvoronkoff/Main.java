@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.UUID;
 
 
 public class Main {
@@ -32,7 +33,7 @@ public class Main {
         do {
             System.out.println();
             System.out.println("for check connection, press 0");
-
+            System.out.println("for add link, press 1");
             System.out.print("\nfor exit, press q or Q: ");
 
             pr = sc.next().toUpperCase();
@@ -40,6 +41,9 @@ public class Main {
             switch (pr) {
                 case "0":
                     checkStatus();
+                    break;
+                case "1":
+                    addNewLink();
                     break;
                 default:
                     break;
@@ -50,7 +54,8 @@ public class Main {
     }
 
     public static void checkStatus(){
-        try{ Connection connection = null;
+        try{
+            Connection connection = null;
         Statement statement = null;
 
         System.out.println("Registering JDBC driver...");
@@ -94,5 +99,94 @@ public class Main {
 
     }
 
+    }
+
+    static void addNewLink() {
+
+        String val;
+        String repeatAdd="n";
+        // ArrayList<Student> newInputStudents = new ArrayList<>();
+//-----------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
+        boolean value;
+//-----------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
+        System.out.println();
+        System.out.println("Insert link ");
+
+        do {
+            System.out.println();
+            System.out.print("Insert val ");
+
+            val = sc.next().trim();
+            while (val.isEmpty()) {
+                System.out.println("val is empty, retry: ");
+                val = sc.nextLine().trim();
+
+            }
+
+            int rowsAffected = insertNewLink(val);
+
+            if (rowsAffected == 0) {
+                System.out.println("Something went wrong.");
+            } else {
+                System.out.println("link was saved");
+
+                System.out.println();
+                System.out.print("\nAdd new link?   (Y/N): ");
+                repeatAdd = sc.next().toUpperCase();
+            }
+        }while (repeatAdd.equals("Y")) ;
+    }
+
+    public static int insertNewLink(String val) {
+        int rowsAffected = 0;
+
+        java.sql.Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+
+        try {
+
+            Statement statement = null;
+
+            System.out.println("Registering JDBC driver...");
+
+            Class.forName("org.postgresql.Driver");
+
+            System.out.println("Creating database connection...");
+            connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
+
+
+            UUID uuid = UUID.randomUUID();
+            String query = " insert into link (id, val)  values ("+"'" + uuid +"', '"+val+"'); ";
+            System.out.println(query);
+            preparedStatement = connection.prepareStatement(query);
+
+
+            System.out.println("Executing statement...");
+            rowsAffected = preparedStatement.executeUpdate();
+
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return rowsAffected;
     }
 }
