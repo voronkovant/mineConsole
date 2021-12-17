@@ -124,8 +124,8 @@ public class Main {
                 val = sc.nextLine().trim();
 
             }
-
-            int rowsAffected = insertNewLink(val);
+            UUID link = UUID.randomUUID();
+            int rowsAffected = insertNewLink(link, val);
 
             if (rowsAffected == 0) {
                 System.out.println("Something went wrong.");
@@ -133,13 +133,18 @@ public class Main {
                 System.out.println("link was saved");
 
                 System.out.println();
+                System.out.println("add tag?  (Y/N): ");
+                repeatAdd = sc.next().toUpperCase();
+                if(repeatAdd.equals("Y")){
+                    addTag(link);
+                }
                 System.out.print("\nAdd new link?   (Y/N): ");
                 repeatAdd = sc.next().toUpperCase();
             }
         }while (repeatAdd.equals("Y")) ;
     }
 
-    public static int insertNewLink(String val) {
+    public static int insertNewLink(UUID uuid, String val) {
         int rowsAffected = 0;
 
         java.sql.Connection connection = null;
@@ -158,7 +163,7 @@ public class Main {
             connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
 
 
-            UUID uuid = UUID.randomUUID();
+
             String query = " insert into link (id, val)  values ("+"'" + uuid +"', '"+val+"'); ";
             System.out.println(query);
             preparedStatement = connection.prepareStatement(query);
@@ -188,5 +193,178 @@ public class Main {
         }
 
         return rowsAffected;
+    }
+
+    public static int insertNewTag(UUID uuid, String val) {
+        int rowsAffected = 0;
+
+        java.sql.Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+
+        try {
+
+            Statement statement = null;
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
+            String query = " insert into tag (id, val)  values ("+"'" + uuid +"', '"+val+"'); ";
+            System.out.println(query);
+            preparedStatement = connection.prepareStatement(query);
+
+            rowsAffected = preparedStatement.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return rowsAffected;
+    }
+
+    public static int insertNewTagLink(UUID tag, UUID link) {
+        int rowsAffected = 0;
+
+        java.sql.Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
+
+        try {
+
+            Statement statement = null;
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
+            UUID uuid = UUID.randomUUID();
+            String query = " insert into tag_link (id, tag_fk, link_fk) " +
+                    " values ('" + uuid +"',"+"'" + tag +"', '"+link+"'); ";
+            System.out.println(query);
+            preparedStatement = connection.prepareStatement(query);
+
+            rowsAffected = preparedStatement.executeUpdate();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return rowsAffected;
+    }
+
+
+    public static UUID findTagByVal(String val) {
+        java.sql.Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        UUID resultUUID=null;;
+
+        try {
+
+            Statement statement = null;
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
+
+            String query="select id from tag where val='"+val+"';";
+            System.out.println(query);
+            preparedStatement = connection.prepareStatement(query);
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                String id = resultSet.getString("id");
+                resultUUID = UUID.fromString(id);
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return  resultUUID;
+    }
+
+    static void addTag(UUID link) {
+
+        String val;
+        String repeatAdd="n";
+        // ArrayList<Student> newInputStudents = new ArrayList<>();
+//-----------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
+        boolean value;
+//-----------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
+        System.out.println();
+        System.out.println("Adding tag ");
+
+        do {
+            System.out.println();
+            System.out.print("Insert tag ");
+
+            val = sc.next().trim();
+            while (val.isEmpty()) {
+                System.out.println("tag is empty, retry: ");
+                val = sc.nextLine().trim();
+
+            }
+            UUID tag= findTagByVal(val);
+            int rowsAffected=1;
+            if(tag==null){
+               tag= UUID.randomUUID();
+               rowsAffected = insertNewTag(tag, val);
+                if (rowsAffected == 0) {
+                    System.out.println("Something went wrong.");
+                } else {
+                    System.out.println("tag was saved");
+                }
+            }
+            rowsAffected =insertNewTagLink(tag, link);
+
+            if (rowsAffected == 0) {
+                System.out.println("Something went wrong.");
+            } else {
+                System.out.println("tag_link was saved");
+
+                System.out.println();
+
+                System.out.print("\nAdd new tag?   (Y/N): ");
+                repeatAdd = sc.next().toUpperCase();
+            }
+        }while (repeatAdd.equals("Y")) ;
     }
 }
