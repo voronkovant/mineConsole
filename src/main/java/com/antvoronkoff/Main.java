@@ -1,10 +1,7 @@
 package  com.antvoronkoff;
 
 import java.sql.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 
 
 public class Main {
@@ -34,6 +31,7 @@ public class Main {
             System.out.println();
             System.out.println("for check connection, press 0");
             System.out.println("for add link, press 1");
+            System.out.println("for search link by tags, press 2");
             System.out.print("\nfor exit, press q or Q: ");
 
             pr = sc.next().toUpperCase();
@@ -44,6 +42,9 @@ public class Main {
                     break;
                 case "1":
                     addNewLink();
+                    break;
+                case "2":
+                    findLinkByTag();
                     break;
                 default:
                     break;
@@ -142,6 +143,92 @@ public class Main {
                 repeatAdd = sc.next().toUpperCase();
             }
         }while (repeatAdd.equals("Y")) ;
+    }
+
+    static void findLinkByTag() {
+
+        String val;
+        ArrayList<UUID> filterTag=new ArrayList<>();
+        String repeatAdd="n";
+        // ArrayList<Student> newInputStudents = new ArrayList<>();
+//-----------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
+        boolean value;
+//-----------------------------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------------------------------
+
+        do {
+            System.out.println("Insert tag:");
+
+            val = sc.next().trim();
+            while (val.isEmpty()) {
+                System.out.println("tag is empty, retry: ");
+                val = sc.nextLine().trim();
+
+            }
+
+            UUID tag= findTagByVal(val);
+            if(tag==null){
+                    System.out.println("tag no founded");
+                } else {
+                    filterTag.add(tag);
+                    System.out.println("tag added to filter");
+                }
+                System.out.println("add tag?  (Y/N): ");
+                repeatAdd = sc.next().toUpperCase();
+
+        }while (repeatAdd.equals("Y")) ;
+        findLinkByTag(filterTag);
+    }
+
+    public static void findLinkByTag(List<UUID> filterTag){
+        java.sql.Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        UUID resultUUID=null;;
+
+        try {
+
+            Statement statement = null;
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
+            String filter="";
+            for(UUID tag:filterTag){
+                filter+="'"+tag.toString()+"',";
+            }
+            StringBuffer sb= new StringBuffer(filter);
+            sb.deleteCharAt(sb.length()-1);
+            String query="select distinct tl.link_fk id, l.val link from tag_link tl" +
+                    " left join link l on l.id=tl.link_fk where tl.tag_fk in (" +
+                    sb+
+                    ")";
+            System.out.println(query);
+            preparedStatement = connection.prepareStatement(query);
+            resultSet = preparedStatement.executeQuery();
+            System.out.println("Founded:");
+            while (resultSet.next()) {
+                String id = resultSet.getString("id");
+                String link=resultSet.getString("link");
+                System.out.println("id|"+id+"| link|"+link+"");
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public static int insertNewLink(UUID uuid, String val) {
