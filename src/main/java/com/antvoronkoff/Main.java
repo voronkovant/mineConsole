@@ -8,7 +8,7 @@ public class Main {
 
     static final String DATABASE_URL = "jdbc:postgresql://127.0.0.1:5432/minedb";
     static final String USER = "postgres";
-    static final String PASSWORD = "pass";
+    static final String PASSWORD = "Qwerty1";
 
 
 
@@ -134,11 +134,13 @@ public class Main {
                 System.out.println("link was saved");
 
                 System.out.println();
-                System.out.println("add tag?  (Y/N): ");
-                repeatAdd = sc.next().toUpperCase();
-                if(repeatAdd.equals("Y")){
-                    addTag(link);
-                }
+                do{
+                    System.out.println("add tag?  (Y/N): ");
+                    repeatAdd = sc.next().toUpperCase();
+                    if(repeatAdd.equals("Y")){
+                        addTag(link);
+                    }
+                }while(!repeatAdd.equals("N"));
                 System.out.print("\nAdd new link?   (Y/N): ");
                 repeatAdd = sc.next().toUpperCase();
             }
