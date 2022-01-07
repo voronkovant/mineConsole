@@ -28,6 +28,7 @@ public class Controller {
             System.out.println("for check status, press 1");
             System.out.println("for add link, press 2");
             System.out.println("for search link by tags, press 3");
+            System.out.println("for show all tag, press 4");
             System.out.print("\nfor exit, press q or Q: ");
 
             pr = sc.next().toUpperCase();
@@ -44,6 +45,9 @@ public class Controller {
                     break;
                 case "3":
                     findLinkByTag();
+                    break;
+                case "4":
+                    showAllTag();
                     break;
                 default:
                     break;
@@ -87,6 +91,49 @@ public class Controller {
             }
 
             System.out.println("Closing connection and releasing resources...");
+            sc.next();
+            resultSet.close();
+            statement.close();
+            connection.close();}
+        catch(ClassNotFoundException exception){
+            System.out.println(exception);
+
+        }
+        catch( SQLException exception){
+            System.out.println(exception);
+
+        }
+
+    }
+
+
+    public void showAllTag(){
+        try{
+            Connection connection = null;
+            Statement statement = null;
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
+
+            statement = connection.createStatement();
+
+            String sql;
+            sql="SELECT t.val val FROM tag t order by val";
+
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            System.out.println("\nFounded:");
+            int count =0;
+            while (resultSet.next()) {
+                String val= resultSet.getString("val");
+                System.out.print(val+"  ");
+                if(count<4)
+                    {count++;}
+                else{
+                    count=0;
+                    System.out.println();
+                }
+
+            }
             sc.next();
             resultSet.close();
             statement.close();
