@@ -2,6 +2,7 @@ package  com.antvoronkoff;
 
 import java.sql.*;
 import java.util.*;
+import java.io.IOException;
 
 
 public class Main {
@@ -28,6 +29,7 @@ public class Main {
 
         String pr;
         do {
+            clearScreen();
             System.out.println();
             System.out.println("for check connection, press 0");
             System.out.println("for add link, press 1");
@@ -88,6 +90,7 @@ public class Main {
         }
 
         System.out.println("Closing connection and releasing resources...");
+        sc.next();
         resultSet.close();
         statement.close();
         connection.close();}
@@ -141,6 +144,7 @@ public class Main {
                         addTag(link);
                     }
                 }while(!repeatAdd.equals("N"));
+                clearScreen();
                 System.out.print("\nAdd new link?   (Y/N): ");
                 repeatAdd = sc.next().toUpperCase();
             }
@@ -148,7 +152,7 @@ public class Main {
     }
 
     static void findLinkByTag() {
-
+        clearScreen();
         String val;
         ArrayList<UUID> filterTag=new ArrayList<>();
         String repeatAdd="n";
@@ -213,6 +217,7 @@ public class Main {
                 String link=resultSet.getString("link");
                 System.out.println("id|"+id+"| link|"+link+"");
             }
+            sc.next();
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         } finally {
@@ -455,5 +460,17 @@ public class Main {
                 repeatAdd = sc.next().toUpperCase();
             }
         }while (repeatAdd.equals("Y")) ;
+    }
+
+    public static void clearScreen(){
+        try {
+            if (System.getProperty("os.name").contains("Windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                Runtime.getRuntime().exec("clear");
+            }
+        } catch (InterruptedException | IOException e) {
+            e.printStackTrace();
+        }
     }
 }
